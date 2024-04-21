@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash
 
 bp_user = Blueprint("users", __name__)
 
-
+# useless for now, we will see
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -45,9 +45,48 @@ def token_required(f):
     return decorated
 
 
+
 @bp_user.route("/cox")
+@token_required
 def home():
     return "Hello, Users!"
+
+@bp_user.route("/users/checkUser", methods=["POST"])
+def check_valid_token():
+    token = None
+    if "Authorization" in request.headers:
+        token = request.headers["Authorization"]
+    if not token:
+        return {
+            "message": "Authentication Token is missing!",
+            "data": None,
+            "error": "Unauthorized"
+        }, 401
+    try:
+        data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
+        current_user = User.query.filter_by(id=data["user_id"]).first()
+        if current_user is None:
+            return {
+            "message": "Invalid Authentication token!",
+            "data": None,
+            "error": "Unauthorized"
+        }, 401
+
+        # good check, but for later on 
+        # if not current_user["active"]:
+        #     abort(403)
+
+        return {
+            "message": "You are in",
+            "data": None,
+            "user_id": current_user.id
+        }, 200
+    except Exception as e:
+        return {
+            "message": "Something went wrong",
+            "data": None,
+            "error": str(e)
+        }, 500
 
 
 def get_by_email(email):
