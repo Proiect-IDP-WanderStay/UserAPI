@@ -192,6 +192,12 @@ def deleteUser():
     user= User.query.filter_by(id=payload["user_id"]).first()
     reservations = Reservation.query.filter_by( user_id=payload["user_id"]).all()
 
+    if (not user):
+        return {
+            "message": "The user does not exist ",
+            "error": "Bad request",
+        }, 400
+
     for reservation in reservations:
         db.session.delete(reservation)
     db.session.commit()
