@@ -5,9 +5,12 @@ from flask import current_app
 from flask import request, abort
 from functools import wraps
 from . import app
+from . import db
 from werkzeug.security import check_password_hash
 
 bp_user = Blueprint("users", __name__)
+
+count = 100
 
 # useless for now, we will see
 def token_required(f):
@@ -146,3 +149,24 @@ def login():
                 "error": str(e),
                 "data": None
         }, 500
+    
+
+@bp_user.route("/users/addUser", methods=["POST"])
+def addUser():
+    global count
+    count = count + 1
+    payload = request.get_json(silent=True) 
+    user = User(id = count,
+            name = payload['name'],
+            password = payload['password'],
+            created_date = '2024-05-08',
+            mail = payload['mail'])
+    
+    db.session.add(user)
+    db.session.commit()
+    print(count)
+
+    return {
+        "message": "User added",
+        "user_id": user.id,
+    }, 200

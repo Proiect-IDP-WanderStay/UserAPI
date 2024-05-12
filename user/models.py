@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash
 
 from . import db
 
-
 @dataclass
 class User(db.Model):
    __tablename__ = "Users"
@@ -22,12 +21,12 @@ class User(db.Model):
    mail = db.Column(db.String(128), nullable=False)
 
    def __init__(self, id, name, password, created_date, mail):
+
       self.id = id
       self.name = name
       self.password = self.encrypt_password(password)
       self.created_date = created_date
       self.mail = mail
-
 
    def encrypt_password(self, password):
       """Encrypt password"""
